@@ -1,5 +1,11 @@
 # Conecta API
 
+## Evolução de jornadas e próximos passos
+
+O contexto da sessão agora recomenda um próximo passo com regra e motivo, a partir de preferência explícita, exploração, ajuda ou conclusão. A nova consulta `/api/v2/admin/signals` avalia sinais na data histórica escolhida e informa se continuam ativos hoje. A consulta v1 foi preservada para o painel existente.
+
+Leia [a evolução do backend](docs/EVOLUTION.md) para exemplos, integração dos novos campos e proposta de arquitetura Node.js serverless em AWS ou Azure. A implantação em nuvem continua planejada; a execução implementada usa Express e SQLite local.
+
 ### Acessos organizados. Jornadas compreensíveis. Ações explicáveis.
 
 Backend do Conecta para o Hackathon Conexão Ancestral, **Petronect + KODIE Academy**. Evolui os conceitos da base de Ines para uma API de eventos versionada, com persistência local, regras de jornada, exportação e gestão de ações.

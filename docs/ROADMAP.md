@@ -9,6 +9,13 @@
 - [x] CSV filtrado e gestão de estado de ações com auditoria.
 - [x] Testes automatizados de API, segurança e persistência.
 
+## Evolução implementada nesta branch
+
+- [x] Contexto explicável por sessão, com prioridade de regras.
+- [x] Consulta de sinais v2 com referência histórica e atividade atual separadas.
+- [x] Contrato OpenAPI e testes de regressão.
+- [ ] Consumir e apresentar esses campos nos frontends.
+
 ## v0.2 — Evolução coordenada pela equipe
 
 - [ ] Instrumentar as telas principais após estabilização, com catálogo explícito de eventos.

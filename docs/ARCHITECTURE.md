@@ -1,5 +1,7 @@
 # Arquitetura do Conecta
 
+Evolução implementada: [contexto explicável por sessão e sinais históricos v2](EVOLUTION.md), em `src/services/context.js` e `src/services/insights.js`. O mesmo documento detalha a proposta futura de adaptação serverless, ainda não implantada.
+
 ## Decisão estrutural
 
 Três repositórios independentes, uma API modular e um único banco no protótipo. Separar frontends e backend permite que a equipe evolua a experiência do usuário sem acoplar as telas administrativas. A API é a fonte de verdade para contagem, jornadas, sinais e ações.

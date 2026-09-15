@@ -381,6 +381,65 @@
           }
         },
         "required": ["id", "signal_id", "previous_status", "status", "created_at"]
+      },
+      "Recommendation": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string",
+            "enum": [
+              "collection-disabled",
+              "completed",
+              "repeated-help",
+              "explicit-interest",
+              "exploring",
+              "welcome"
+            ]
+          },
+          "ruleVersion": {
+            "const": "1"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "page": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "simulated": {
+            "const": true
+          }
+        },
+        "required": ["rule", "ruleVersion", "reason", "page", "target", "simulated"]
+      },
+      "HistoricalSignal": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Signal"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "evaluatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "ruleVersion": {
+                "const": "2"
+              },
+              "activeNow": {
+                "type": "boolean",
+                "description": "Regra ativa agora; não representa autorização de escrita."
+              },
+              "statusScope": {
+                "const": "current"
+              }
+            },
+            "required": ["evaluatedAt", "ruleVersion", "activeNow", "statusScope"]
+          }
+        ]
       }
     },
     "securitySchemes": {
@@ -756,9 +815,18 @@
                     },
                     "nextStep": {
                       "type": "string"
+                    },
+                    "recommendation": {
+                      "$ref": "#/components/schemas/Recommendation"
                     }
                   },
-                  "required": ["profileId", "analyticsConsent", "simulated", "nextStep"]
+                  "required": [
+                    "profileId",
+                    "analyticsConsent",
+                    "simulated",
+                    "nextStep",
+                    "recommendation"
+                  ]
                 }
               }
             }
@@ -2008,6 +2076,194 @@
             }
           }
         }
+      }
+    },
+    "/api/v2/admin/signals": {
+      "get": {
+        "summary": "Sinais na referência histórica com atividade atual separada",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "simulated": {
+                      "const": true
+                    },
+                    "filter": {
+                      "$ref": "#/components/schemas/Filter"
+                    },
+                    "evaluatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "selectionScope": {
+                      "const": "profiles-observed-in-range"
+                    },
+                    "evidenceScope": {
+                      "const": "history-through-reference"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/HistoricalSignal"
+                      }
+                    }
+                  },
+                  "required": [
+                    "simulated",
+                    "filter",
+                    "evaluatedAt",
+                    "selectionScope",
+                    "evidenceScope",
+                    "total",
+                    "items"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Início inclusivo UTC; padrão 30 dias antes de hoje"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fim inclusivo UTC; padrão hoje; intervalo máximo 366 dias"
+          },
+          {
+            "name": "segment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["energia", "tecnologia", "servicos"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ],
+        "description": "Seleciona perfis observados no recorte; considera todo seu histórico até min(fim de to, agora). Status da ação é atual. Ver docs/EVOLUTION.md."
       }
     }
   }

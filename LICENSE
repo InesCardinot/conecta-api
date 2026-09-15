@@ -1,0 +1,9 @@
+# Licenciamento — proposta para a equipe
+
+Licença sugerida: **MIT**, para o código original desenvolvido pela Equipe 05, após validação da titularidade e concordância das autoras.
+
+Este arquivo registra a proposta; não concede uma nova licença ao código herdado. Os repositórios de origem não possuem um arquivo LICENSE na revisão utilizada. O package-completo.json da base de Ines declara MIT, mas não contém o texto da licença nem esclarece a cobertura do restante dos arquivos.
+
+Preserve autoria, histórico e avisos existentes. Dependências, fontes, ícones, marcas Petronect/KODIE e materiais do evento mantêm seus próprios direitos. A publicação pública autoriza consulta do repositório, mas não substitui a definição de licença de reutilização.
+
+A equipe pode adotar o texto MIT em https://opensource.org/license/mit, indicando as titulares corretas. Até essa decisão, não exibimos badge de licença MIT nem afirmamos que todo o conteúdo pode ser redistribuído sob ela.

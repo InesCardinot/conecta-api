@@ -1,0 +1,2014 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Conecta API",
+    "version": "0.1.0",
+    "description": "Hackathon Conexão Ancestral | Petronect + KODIE Academy | Equipe 05. Base exclusivamente simulada. Admin exige Bearer no modo local; a alternativa sem autenticação se aplica somente a GET em DEMO_READ_ONLY=true."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000",
+      "description": "Desenvolvimento local"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requestId": {
+                "type": "string"
+              }
+            },
+            "required": ["code", "message", "requestId"]
+          }
+        },
+        "required": ["error"]
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": ["demo-01", "demo-02", "demo-03", "demo-04", "demo-05", "demo-06"]
+          },
+          "label": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string",
+            "enum": ["energia", "tecnologia", "servicos"]
+          }
+        },
+        "required": ["id", "label", "segment"]
+      },
+      "SessionInput": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "$ref": "#/components/schemas/ProfileId"
+          },
+          "analyticsConsent": {
+            "const": true
+          }
+        },
+        "required": ["profileId", "analyticsConsent"],
+        "additionalProperties": false
+      },
+      "ProfileId": {
+        "type": "string",
+        "enum": ["demo-01", "demo-02", "demo-03", "demo-04", "demo-05", "demo-06"]
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "const": 86400
+          },
+          "simulated": {
+            "const": true
+          }
+        },
+        "required": ["id", "token", "expiresIn", "simulated"]
+      },
+      "Preference": {
+        "type": "object",
+        "properties": {
+          "analyticsConsent": {
+            "type": "boolean"
+          }
+        },
+        "required": ["analyticsConsent"],
+        "additionalProperties": false
+      },
+      "EventInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID v4; idempotente globalmente"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["page_view", "click", "preference", "journey_completed"]
+          },
+          "page": {
+            "type": "string",
+            "enum": ["home", "empresa", "oportunidades", "ajuda", "preferencias"]
+          },
+          "target": {
+            "type": "string",
+            "enum": ["page", "explorar", "ajuda", "energia", "tecnologia", "servicos", "concluir"]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Últimas 24h; tolerância de 60 segundos no futuro"
+          }
+        },
+        "required": ["id", "type", "page", "target", "occurredAt"],
+        "additionalProperties": false
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "page": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sessionId",
+          "profileId",
+          "label",
+          "segment",
+          "type",
+          "page",
+          "target",
+          "occurredAt"
+        ]
+      },
+      "Count": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": ["label", "value"]
+      },
+      "Journey": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "firstClick": {
+            "type": ["string", "null"]
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": [
+          "profileId",
+          "label",
+          "segment",
+          "sessions",
+          "firstClick",
+          "lastSeen",
+          "completed",
+          "timeline"
+        ]
+      },
+      "Signal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["alta", "media"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ActionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "profileId",
+          "label",
+          "rule",
+          "title",
+          "reason",
+          "recommendation",
+          "priority",
+          "status"
+        ]
+      },
+      "ActionStatus": {
+        "type": "string",
+        "enum": ["open", "planned", "done", "dismissed"]
+      },
+      "ActionInput": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ActionStatus"
+          }
+        },
+        "required": ["status"],
+        "additionalProperties": false
+      },
+      "Filter": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "segment": {
+            "type": ["string", "null"]
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "required": ["from", "to", "segment", "limit", "offset"]
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "simulated": {
+            "const": true
+          },
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          },
+          "events": {
+            "type": "integer"
+          },
+          "profiles": {
+            "type": "integer"
+          },
+          "sessions": {
+            "type": "integer"
+          },
+          "returningProfiles": {
+            "type": "integer"
+          },
+          "completedProfiles": {
+            "type": "integer"
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          },
+          "firstClicks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          }
+        },
+        "required": [
+          "simulated",
+          "filter",
+          "events",
+          "profiles",
+          "sessions",
+          "returningProfiles",
+          "completedProfiles",
+          "pages",
+          "firstClicks",
+          "daily"
+        ]
+      },
+      "Audit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "signal_id": {
+            "type": "string"
+          },
+          "previous_status": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "signal_id", "previous_status", "status", "created_at"]
+      }
+    },
+    "securitySchemes": {
+      "adminBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "ADMIN_TOKEN local de pelo menos 32 caracteres"
+      },
+      "sessionBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token retornado por POST /sessions; válido por 24h"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Saúde e modo da API",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["status", "version", "simulated", "readOnly"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog": {
+      "get": {
+        "summary": "Catálogo fictício permitido",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "profiles": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Profile"
+                      }
+                    },
+                    "interests": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "readOnly": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["simulated", "profiles", "interests", "readOnly"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "summary": "Cria sessão fictícia; exige modo de escrita",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{id}/context": {
+      "get": {
+        "summary": "Contexto mínimo da própria sessão",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profileId": {
+                      "type": "string"
+                    },
+                    "analyticsConsent": {
+                      "type": "boolean"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "nextStep": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["profileId", "analyticsConsent", "simulated", "nextStep"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions/{id}/preferences": {
+      "patch": {
+        "summary": "Altera coleta; retirada apaga eventos da sessão",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "analyticsConsent": {
+                      "type": "boolean"
+                    },
+                    "eventsRemoved": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["analyticsConsent", "eventsRemoved"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preference"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{id}/events": {
+      "post": {
+        "summary": "Registra evento único ou reconhece repetição idêntica",
+        "security": [
+          {
+            "sessionBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Repetição idêntica",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "boolean"
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["accepted", "duplicate", "id"]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Novo evento",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "boolean"
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["accepted", "duplicate", "id"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/summary": {
+      "get": {
+        "summary": "Métricas do recorte completo",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Início inclusivo UTC; padrão 30 dias antes de hoje"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fim inclusivo UTC; padrão hoje; intervalo máximo 366 dias"
+          },
+          {
+            "name": "segment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["energia", "tecnologia", "servicos"]
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/journeys": {
+      "get": {
+        "summary": "Jornadas e timelines observadas no recorte",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Journey"
+                      }
+                    }
+                  },
+                  "required": ["simulated", "total", "items"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Início inclusivo UTC; padrão 30 dias antes de hoje"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fim inclusivo UTC; padrão hoje; intervalo máximo 366 dias"
+          },
+          {
+            "name": "segment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["energia", "tecnologia", "servicos"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/signals": {
+      "get": {
+        "summary": "Regras explicáveis sobre o recorte",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "simulated": {
+                      "type": "boolean"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Signal"
+                      }
+                    }
+                  },
+                  "required": ["simulated", "total", "items"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Início inclusivo UTC; padrão 30 dias antes de hoje"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fim inclusivo UTC; padrão hoje; intervalo máximo 366 dias"
+          },
+          {
+            "name": "segment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["energia", "tecnologia", "servicos"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/signals/{id}": {
+      "patch": {
+        "summary": "Atualiza ação de sinal ativo; não envia comunicação",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/ActionStatus"
+                    },
+                    "simulated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["id", "status", "simulated"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit": {
+      "get": {
+        "summary": "Auditoria global de estados de ações",
+        "responses": {
+          "200": {
+            "description": "Sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Audit"
+                      }
+                    }
+                  },
+                  "required": ["items"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/events.csv": {
+      "get": {
+        "summary": "Exporta todos os eventos do recorte, até 10.000 linhas",
+        "security": [
+          {
+            "adminBearer": []
+          },
+          {}
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Início inclusivo UTC; padrão 30 dias antes de hoje"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Fim inclusivo UTC; padrão hoje; intervalo máximo 366 dias"
+          },
+          {
+            "name": "segment",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["energia", "tecnologia", "servicos"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV UTF-8 com BOM e campos escapados, fórmulas neutralizadas",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro conforme docs/API.md",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

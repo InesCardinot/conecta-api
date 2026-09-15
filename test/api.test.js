@@ -8,7 +8,128 @@ import { openDatabase } from '../src/db/database.js';
 import { createApp } from '../src/app.js';
 import { seed } from '../scripts/seed.js';
 import { csv } from '../src/services/analytics.js';
+import { historicalSignals } from '../src/services/insights.js';
 const token = 'test-only-token-with-more-than-thirty-two-characters';
+
+test('contexto explica preferência, ajuda e conclusão sem cruzar sessões', async (t) => {
+  const { call, session } = await fixture(t);
+  const a = await session(),
+    b = await session();
+  const context = async (s) =>
+    (await call(`/api/v1/sessions/${s.id}/context`, { auth: s.token })).data;
+  const track = async (type, target) => {
+    const r = await call(`/api/v1/sessions/${a.id}/events`, {
+      method: 'POST',
+      auth: a.token,
+      body: {
+        id: randomUUID(),
+        type,
+        target,
+        page: 'oportunidades',
+        occurredAt: new Date().toISOString(),
+      },
+    });
+    assert.equal(r.status, 201);
+  };
+  assert.equal((await context(a)).recommendation.rule, 'welcome');
+  await track('click', 'explorar');
+  assert.equal((await context(a)).recommendation.rule, 'exploring');
+  await track('preference', 'energia');
+  assert.equal((await context(a)).recommendation.target, 'energia');
+  assert.equal((await context(b)).recommendation.rule, 'welcome');
+  assert.equal((await call(`/api/v1/sessions/${a.id}/context`, { auth: b.token })).status, 401);
+  await track('click', 'ajuda');
+  await track('click', 'ajuda');
+  assert.equal((await context(a)).recommendation.rule, 'repeated-help');
+  await track('journey_completed', 'concluir');
+  assert.equal((await context(a)).recommendation.rule, 'completed');
+  await call(`/api/v1/sessions/${a.id}/preferences`, {
+    method: 'PATCH',
+    auth: a.token,
+    body: { analyticsConsent: false },
+  });
+  assert.equal((await context(a)).recommendation.rule, 'collection-disabled');
+  await call(`/api/v1/sessions/${a.id}/preferences`, {
+    method: 'PATCH',
+    auth: a.token,
+    body: { analyticsConsent: true },
+  });
+  assert.equal((await context(a)).recommendation.rule, 'welcome');
+});
+
+test('sinais v2 usam referência histórica e distinguem retorno posterior', async (t) => {
+  const { db, call, session } = await fixture(t);
+  const s = await session();
+  const insert = (id, type, target, time) =>
+    db
+      .prepare('INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(id, s.id, type, 'oportunidades', target, time, time);
+  insert('past', 'click', 'explorar', '2026-01-01T12:00:00.000Z');
+  insert('return', 'journey_completed', 'concluir', '2026-01-20T12:00:00.000Z');
+  const filter = { from: '2026-01-01', to: '2026-01-10', segment: null, limit: 50, offset: 0 };
+  const report = historicalSignals(db, filter, Date.parse('2026-02-01T00:00:00.000Z'));
+  assert.equal(report.evaluatedAt, '2026-01-10T23:59:59.999Z');
+  assert.equal(report.items[0].rule, 'inactive-7d');
+  assert.equal(report.items[0].activeNow, false);
+  assert.equal(report.items[0].statusScope, 'current');
+  const recent = historicalSignals(db, { ...filter, to: '2026-01-02' }, Date.parse('2026-02-01'));
+  assert.equal(
+    recent.total,
+    0,
+    'relógio de hoje não deve criar inatividade em um recorte de um dia',
+  );
+  assert.equal((await call('/api/v2/admin/signals')).status, 401);
+  assert.equal(
+    (await call('/api/v2/admin/signals?from=2026-01-01&to=2026-01-10', { auth: token })).status,
+    200,
+  );
+  assert.equal((await call('/api/v2/admin/signals?limit=0', { auth: token })).status, 400);
+});
+
+test('sinais v2 incluem conclusão anterior ao recorte e paginam depois de calcular', async (t) => {
+  const { db, session } = await fixture(t);
+  const s = await session();
+  for (const [id, type, target, time] of [
+    ['complete', 'journey_completed', 'concluir', '2026-01-01T00:00:00.000Z'],
+    ['help1', 'click', 'ajuda', '2026-01-10T00:00:00.000Z'],
+    ['help2', 'click', 'ajuda', '2026-01-11T00:00:00.000Z'],
+  ])
+    db.prepare('INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+      id,
+      s.id,
+      type,
+      'ajuda',
+      target,
+      time,
+      time,
+    );
+  const filter = { from: '2026-01-10', to: '2026-01-30', segment: null, limit: 1, offset: 0 };
+  const report = historicalSignals(db, filter, Date.parse('2026-02-01'));
+  assert.deepEqual(
+    report.items.map((s) => s.rule),
+    ['repeated-help'],
+  );
+  const page2 = historicalSignals(db, { ...filter, offset: 1 }, Date.parse('2026-02-01'));
+  assert.equal(page2.total, 1);
+  assert.equal(page2.items.length, 0);
+  assert.equal(
+    historicalSignals(db, { ...filter, from: '2026-01-12' }, Date.parse('2026-02-01')).total,
+    0,
+  );
+});
+
+test('sinais v2 limitam referência ao presente e permitem leitura pública fictícia', async (t) => {
+  const { db, call } = await fixture(t, { readOnly: true });
+  const now = Date.parse('2026-01-02T12:00:00.000Z');
+  const report = historicalSignals(
+    db,
+    { from: '2026-01-01', to: '2026-01-30', segment: null, limit: 50, offset: 0 },
+    now,
+  );
+  assert.equal(report.evaluatedAt, new Date(now).toISOString());
+  assert.equal(report.total, 0);
+  assert.equal((await call('/api/v2/admin/signals')).status, 200);
+});
 async function fixture(t, options = {}) {
   const db = openDatabase(':memory:');
   const server = createApp(db, {

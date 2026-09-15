@@ -1,5 +1,7 @@
 # Modelo de dados e métricas
 
+As definições abaixo descrevem os sinais v1. A [consulta v2](EVOLUTION.md) seleciona perfis pelo recorte e avalia o histórico até a data de referência, com indicação separada de atividade atual. O banco e as chaves de ações permanecem iguais.
+
 ```mermaid
 erDiagram
   PROFILES ||--o{ SESSIONS : possui

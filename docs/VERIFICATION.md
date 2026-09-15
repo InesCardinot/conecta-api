@@ -2,7 +2,13 @@
 
 Verificação local em 15/09/2026, Node.js 24.19.0, Windows. Os resultados descrevem o protótipo e não certificam um ambiente produtivo.
 
-## Testes automatizados
+## Evolução de contexto e sinais v2
+
+Sintaxe dos módulos novos e formatação dos arquivos alterados aprovadas. A verificação global de formatação ainda aponta 15 arquivos preexistentes não alterados nesta revisão; não foi registrada como aprovada.
+
+Nesta revisão, 12 testes HTTP/persistência passaram localmente no Node.js 24.19.0: os oito anteriores e quatro novos cenários de contexto, isolamento, retirada da coleta e sinais históricos. A API foi testada; App e Analytics não foram alterados nem revalidados no navegador nesta revisão. Os resultados de navegador abaixo são o registro da entrega anterior, não uma nova execução.
+
+## Testes automatizados da entrega anterior
 
 | Sistema   | Resultado                                                                                                                                                             |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

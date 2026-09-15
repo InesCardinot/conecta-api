@@ -1,5 +1,7 @@
 # Contrato REST /api/v1
 
+Extensão compatível: contexto de sessão inclui `recommendation` e mantém `nextStep` textual. Nova consulta versionada: `GET /api/v2/admin/signals`, com a mesma autorização administrativa e filtros, inclui `evaluatedAt`, `activeNow` por sinal e `statusScope: current`. Veja [semântica, exemplos e migração](EVOLUTION.md). O painel existente ainda consulta v1.
+
 Base local: http://127.0.0.1:3000. JSON UTF-8; horários em UTC. [OpenAPI 3.1](openapi.json) é a referência legível por ferramentas. Esta cópia do contrato acompanha cada repositório; a fonte de verdade é conecta-api.
 
 ## Autorização

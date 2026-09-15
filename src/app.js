@@ -2,6 +2,8 @@ import express from 'express';
 import { randomUUID, randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import { ApiError, requireValue, object, validateEvent, filters, statuses } from './validation.js';
 import { selectEvents, summary, journeys, signals, csv } from './services/analytics.js';
+import { sessionContext } from './services/context.js';
+import { historicalSignals } from './services/insights.js';
 
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export function createApp(
@@ -108,7 +110,16 @@ export function createApp(
       profileId: req.session.profile_id,
       analyticsConsent: Boolean(req.session.consent),
       simulated: true,
-      nextStep: 'Explore oportunidades e peça ajuda quando precisar.',
+      ...sessionContext(
+        req.session.consent
+          ? db
+              .prepare(
+                'SELECT type, target FROM events WHERE session_id=? ORDER BY occurred_at, id',
+              )
+              .all(req.params.id)
+          : [],
+        Boolean(req.session.consent),
+      ),
     }),
   );
   app.patch('/api/v1/sessions/:id/preferences', writable, session, (req, res) => {
@@ -163,6 +174,10 @@ export function createApp(
     res.status(201).json({ accepted: true, duplicate: false, id: event.id });
   });
   app.use('/api/v1/admin', admin);
+  app.use('/api/v2/admin', admin);
+  app.get('/api/v2/admin/signals', (req, res) =>
+    res.json(historicalSignals(db, filters(req.query))),
+  );
   const data = (req) => {
     const filter = filters(req.query);
     return { filter, events: selectEvents(db, filter) };
@@ -251,16 +266,13 @@ export function createApp(
         : error instanceof SyntaxError && error.status === 400
           ? 400
           : (error.status ?? 500);
-    res
-      .status(status)
-      .json({
-        error: {
-          code: error.code ?? (status === 500 ? 'INTERNAL_ERROR' : 'INVALID_REQUEST'),
-          message:
-            status === 500 ? 'Erro interno. Consulte o responsável pela API.' : error.message,
-          requestId: req.requestId,
-        },
-      });
+    res.status(status).json({
+      error: {
+        code: error.code ?? (status === 500 ? 'INTERNAL_ERROR' : 'INVALID_REQUEST'),
+        message: status === 500 ? 'Erro interno. Consulte o responsável pela API.' : error.message,
+        requestId: req.requestId,
+      },
+    });
   });
   return app;
 }

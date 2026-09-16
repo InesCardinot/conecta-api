@@ -46,7 +46,7 @@ Fonte do escopo: material enviado pela equipe, _Slides_Abertura_Hackathon_Conexa
 
 | Repositório                                                                  | Responsabilidade                                                  | Execução local                  |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------- |
-| [conecta-app](https://github.com/SouBeatrizKaroline/conecta-app)             | Frontend do usuário preservado e integração demonstrativa isolada | http://127.0.0.1:8080/demo.html |
+| [conecta-app](https://github.com/SouBeatrizKaroline/conecta-app)             | Frontend preservado e coleta consentida de eventos demonstrativos | http://127.0.0.1:8080/home.html |
 | [conecta-api](https://github.com/SouBeatrizKaroline/conecta-api)             | Coleta, armazenamento, processamento, API e exportação            | http://127.0.0.1:3000/health    |
 | [conecta-analytics](https://github.com/SouBeatrizKaroline/conecta-analytics) | Visão gerencial, jornadas, sinais e gestão de ações               | http://127.0.0.1:8081           |
 

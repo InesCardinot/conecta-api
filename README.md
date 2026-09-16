@@ -1,5 +1,9 @@
 # Conecta API
 
+## Integração com o Analytics
+
+A saúde da API anuncia suporte a sinais históricos e recomendações em `capabilities`. O Analytics atualizado verifica essa compatibilidade antes de carregar. Execute `node scripts/check-integration.js` com os três repositórios em pastas irmãs para validar o fluxo usando o cliente original do App, sem modificá-lo. Veja [o guia integrado](docs/INTEGRATION.md).
+
 ## Evolução de jornadas e próximos passos
 
 O contexto da sessão agora recomenda um próximo passo com regra e motivo, a partir de preferência explícita, exploração, ajuda ou conclusão. A nova consulta `/api/v2/admin/signals` avalia sinais na data histórica escolhida e informa se continuam ativos hoje. A consulta v1 foi preservada para o painel existente.

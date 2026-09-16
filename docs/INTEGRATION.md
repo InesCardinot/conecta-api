@@ -1,5 +1,26 @@
 # Executar os três sistemas
 
+## Integração de sinais v2 (revisão atual)
+
+Atualize primeiro a API e depois o Analytics. O painel exige `/health.capabilities.historicalSignals: true`; em uma API anterior, informa que a atualização é necessária. O App mantém os endpoints v1 e não precisa de alteração para enviar eventos ou exibir `nextStep` na demo.
+
+- Analytics lê sinais em `/api/v2/admin/signals` e mostra referência UTC, atividade atual e estado atual da ação.
+- Sinais históricos que não estão ativos hoje têm edição desabilitada. O servidor revalida toda escrita.
+- O CSV usa os filtros da última análise exibida, mesmo que os campos tenham sido editados depois.
+- A conexão e as consultas bloqueiam controles enquanto carregam. Falhas ocultam a análise anterior.
+- A integração validada usa `demo.html`; as telas principais do App continuam sob responsabilidade da outra equipe, sem alterações nesta revisão.
+- APIs/sites hospedados ainda precisam de URLs, HTTPS e origens CORS configuradas. O teste local não comprova publicação.
+
+### Repetir o teste entre repositórios
+
+Com os três repositórios em pastas irmãs e as dependências da API instaladas, execute dentro de conecta-api:
+
+```sh
+node scripts/check-integration.js
+```
+
+O teste importa os clientes originais do App e Analytics, sobe a API em porta temporária e usa banco em memória. Verifica coleta, recomendação, sinais v2, gestão, auditoria, CSV e retirada da coleta. Não modifica o App nem a base local. Para outro arranjo de pastas, configure `CONECTA_APP_PATH` e `CONECTA_ANALYTICS_PATH`.
+
 ## Requisitos
 
 Git, Node.js 24.x e npm. Banco SQLite embutido no Node: não é necessário instalar MariaDB para esta versão. Alguns Node 24 emitem aviso de API experimental para node:sqlite; mantenha a versão documentada. Os frontends novos não exigem build ou CDN; as telas herdadas dependem de CDNs externos para Tailwind/Lucide/fontes.

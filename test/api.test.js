@@ -331,6 +331,10 @@ test('base simulada, filtros, regras e gestão persistente com auditoria', async
 test('modo público permite leitura e proíbe toda mutação', async (t) => {
   const { call, db } = await fixture(t, { readOnly: true });
   seed(db);
+  assert.deepEqual((await call('/health')).data.capabilities, {
+    historicalSignals: true,
+    sessionRecommendations: true,
+  });
   assert.equal((await call('/api/v1/admin/summary')).status, 200);
   assert.equal(
     (

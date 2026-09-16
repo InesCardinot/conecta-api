@@ -1,5 +1,19 @@
 # Verificação da entrega
 
+## Verificação da integração API e Analytics em 15/09/2026
+
+- API: 12 testes aprovados; Analytics: 1 teste aprovado; sintaxe verificada nos dois.
+- `node scripts/check-integration.js`: aprovado usando os clientes reais dos repositórios irmãos. Coleta, contexto, sinais v2, mudança de estado, auditoria, CSV e retirada da coleta.
+- Navegador local: conexão administrativa; 37 eventos, seis perfis e nove sessões; ação planejada com auditoria.
+- App/demo original: iniciou sessão e concluiu jornada; a resposta nextStep foi exibida. Arquivos do App não foram alterados.
+- Analytics: recorte até 12/09 mostrou sinal histórico da empresa 02 desativado após conclusão em 15/09. Estado planejado permaneceu visível e o seletor ficou desabilitado.
+- Filtro Energia e período histórico: quatro eventos; período futuro: estado vazio com zero eventos.
+- Exportação acionada após editar filtros sem atualizar: utiliza a consulta da análise exibida.
+- Inspeção visual na largura disponível do navegador, cerca de 600px. O controle de viewport não confirmou 390px; não registramos validação móvel a 390px nesta revisão.
+- Modo público sem token: leitura disponível e seletores de ações desabilitados. API sem capabilities: aviso de atualização e análise anterior ocultada.
+- App verificado no commit `6d2839be14f7cf1879c46e275256a57b3754987c`, com árvore de trabalho limpa.
+- Sem implantação em nuvem, dados reais ou teste de carga. Os registros abaixo pertencem às revisões anteriores.
+
 Verificação local em 15/09/2026, Node.js 24.19.0, Windows. Os resultados descrevem o protótipo e não certificam um ambiente produtivo.
 
 ## Evolução de contexto e sinais v2

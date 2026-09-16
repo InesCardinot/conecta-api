@@ -478,9 +478,21 @@
                     },
                     "readOnly": {
                       "type": "boolean"
+                    },
+                    "capabilities": {
+                      "type": "object",
+                      "properties": {
+                        "historicalSignals": {
+                          "const": true
+                        },
+                        "sessionRecommendations": {
+                          "const": true
+                        }
+                      },
+                      "required": ["historicalSignals", "sessionRecommendations"]
                     }
                   },
-                  "required": ["status", "version", "simulated", "readOnly"]
+                  "required": ["status", "version", "simulated", "readOnly", "capabilities"]
                 }
               }
             }

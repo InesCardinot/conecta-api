@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const db = require('../db'); // ajuste o caminho conforme sua estrutura
+const bcrypt = require('bcryptjs');
+const db = require('../db'); 
 
 /**
  * Gera um token JWT para o usuário
@@ -15,7 +16,7 @@ const gerarToken = (usuario) => {
     },
     process.env.JWT_SECRET || 'sua_chave_secreta_padrao',
     {
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
       issuer: 'sua-api', // identifica quem gerou
       subject: usuario.id.toString() // ID do usuário
     }
@@ -62,10 +63,9 @@ const login = async (email, senha) => {
       throw new Error('Usuário não encontrado');
     }
 
-    // Valida senha
-    // ⚠️ IMPORTANTE: Em produção, use bcrypt para comparar senhas!
-    // const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (usuario.senha !== senha) {
+    // Valida senha usando bcrypt
+    const senhaValida = await bcrypt.compare(senha, usuario.senha);
+    if (!senhaValida) {
       throw new Error('Senha incorreta');
     }
 
@@ -106,10 +106,14 @@ const registrar = async (email, senha, nome) => {
       throw new Error('Email já cadastrado');
     }
 
-    // Insere novo usuário
+    // Gera o hash da senha
+    const salt = await bcrypt.genSalt(10);
+    const senhaCriptografada = await bcrypt.hash(senha, salt);
+
+    // Insere novo usuário com a senha criptografada
     const resultado = await db.query(
       'INSERT INTO usuarios (email, senha, nome) VALUES (?, ?, ?)',
-      [email, senha, nome]
+      [email, senhaCriptografada, nome]
     );
 
     const novoUsuario = {
@@ -153,9 +157,7 @@ const renovarToken = (tokenAntigo) => {
         nome: decoded.nome
       },
       process.env.JWT_SECRET || 'sua_chave_secreta_padrao',
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN || '24h'
-      }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
 
     return novoToken;

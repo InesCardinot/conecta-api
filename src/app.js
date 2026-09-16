@@ -4,6 +4,7 @@ import { ApiError, requireValue, object, validateEvent, filters, statuses } from
 import { selectEvents, summary, journeys, signals, csv } from './services/analytics.js';
 import { sessionContext } from './services/context.js';
 import { historicalSignals } from './services/insights.js';
+import * as authService from './services/authService.js'; // ✅ NOVO
 
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 export function createApp(
@@ -62,6 +63,24 @@ export function createApp(
       return next(new ApiError(401, 'UNAUTHORIZED', 'Token administrativo inválido.'));
     next();
   };
+
+  // ✅ NOVO - Middleware para proteger rotas com JWT
+  const protegerComJWT = (req, res, next) => {
+    const token = (req.get('authorization') ?? '').replace(/^Bearer /, '');
+
+    if (!token) {
+      return next(new ApiError(401, 'INVALID_SESSION', 'Token JWT não fornecido.'));
+    }
+
+    try {
+      const usuario = authService.verificarToken(token);
+      req.usuario = usuario;
+      next();
+    } catch (error) {
+      next(new ApiError(403, 'INVALID_SESSION', error.message));
+    }
+  };
+
   const session = (req, res, next) => {
     const token = (req.get('authorization') ?? '').replace(/^Bearer /, '');
     const row = db.prepare('SELECT * FROM sessions WHERE id=?').get(req.params.id);
@@ -80,6 +99,41 @@ export function createApp(
       capabilities: { historicalSignals: true, sessionRecommendations: true },
     });
   });
+
+  // ✅ NOVO - Rota de Login
+  app.post('/auth/login', writable, (req, res, next) => {
+    try {
+      object(req.body, ['email', 'senha']);
+      requireValue(typeof req.body.email === 'string', 'Email é obrigatório.');
+      requireValue(typeof req.body.senha === 'string', 'Senha é obrigatória.');
+
+      const resultado = authService.login(req.body.email, req.body.senha, db);
+      res.status(200).json(resultado);
+    } catch (error) {
+      next(error instanceof ApiError ? error : new ApiError(401, 'UNAUTHORIZED', error.message));
+    }
+  });
+
+  // ✅ NOVO - Rota de Registrar
+  app.post('/auth/registrar', writable, (req, res, next) => {
+    try {
+      object(req.body, ['email', 'senha', 'nome']);
+      requireValue(typeof req.body.email === 'string', 'Email é obrigatório.');
+      requireValue(typeof req.body.senha === 'string', 'Senha é obrigatória.');
+      requireValue(typeof req.body.nome === 'string', 'Nome é obrigatório.');
+
+      const resultado = authService.registrar(req.body.email, req.body.senha, req.body.nome, db);
+      res.status(201).json(resultado);
+    } catch (error) {
+      next(error instanceof ApiError ? error : new ApiError(400, 'BAD_REQUEST', error.message));
+    }
+  });
+
+  // ✅ NOVO - Rota Protegida (exemplo)
+  app.get('/auth/perfil', protegerComJWT, (req, res) => {
+    res.json({ usuario: req.usuario, simulated: true });
+  });
+
   app.get('/api/v1/catalog', (req, res) =>
     res.json({
       simulated: true,

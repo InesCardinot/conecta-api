@@ -1,5 +1,7 @@
 # Executar os três sistemas
 
+O App principal envia eventos categóricos para esta API somente depois do consentimento da demonstração. A sessão fictícia atravessa `home.html` e `oportunidades.html` via `sessionStorage`; dados digitados, identificadores cadastrais e termos de busca não fazem parte do contrato de eventos.
+
 ## Integração de sinais v2 (revisão atual)
 
 Atualize primeiro a API e depois o Analytics. O painel exige `/health.capabilities.historicalSignals: true`; em uma API anterior, informa que a atualização é necessária. O App mantém os endpoints v1 e não precisa de alteração para enviar eventos ou exibir `nextStep` na demo.

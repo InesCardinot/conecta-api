@@ -72,7 +72,13 @@ export function createApp(
   };
   app.get('/health', (req, res) => {
     db.prepare('SELECT 1').get();
-    res.json({ status: 'ok', version: '0.1.0', simulated: true, readOnly });
+    res.json({
+      status: 'ok',
+      version: '0.1.0',
+      simulated: true,
+      readOnly,
+      capabilities: { historicalSignals: true, sessionRecommendations: true },
+    });
   });
   app.get('/api/v1/catalog', (req, res) =>
     res.json({

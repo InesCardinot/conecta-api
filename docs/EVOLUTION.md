@@ -30,7 +30,7 @@ Os campos `page` e `target` são valores do catálogo. O frontend deve mapeá-lo
 
 Exemplo: um acesso em 01/01 gera inatividade na referência 10/01. Se há uma conclusão em 20/01, a consulta histórica mantém o sinal de 10/01 e retorna `activeNow: false`. Uma conclusão anterior a `from` também é considerada para evitar falsa jornada incompleta.
 
-A versão v1 de sinais permanece com sua semântica original, documentada em DATA-MODEL. O painel atual continua usando v1. Migrar o painel para v2 exige exibir a data de referência e a distinção entre histórico e estado atual. Atualizações continuam em `PATCH /api/v1/admin/signals/:id`, que revalida se o sinal está ativo; a leitura anterior não garante que continuará ativo na escrita. Os sinais ainda reutilizam a chave perfil:regra, sem episódios independentes.
+A versão v1 de sinais permanece com sua semântica original, documentada em DATA-MODEL. Na revisão integrada, o Analytics consome v2 e exibe a data de referência, a atividade atual e o estado atual da ação. A API deve ser atualizada antes do painel. Atualizações continuam em `PATCH /api/v1/admin/signals/:id`, que revalida se o sinal está ativo; a leitura anterior não garante que continuará ativo na escrita. Os sinais ainda reutilizam a chave perfil:regra, sem episódios independentes.
 
 ## Relação com a stack informada pela equipe
 
@@ -69,7 +69,7 @@ Referências técnicas consultadas em 15/09/2026: [desenho de aplicações Lambd
 ## Próximas entregas em ordem
 
 1. Instrumentar uma jornada real das telas do App com o catálogo existente e atualizar o contexto após cada evento aceito.
-2. Adaptar o Analytics para sinais v2, referência temporal e estado atual; validar a leitura com Marketing/Atendimento.
+2. Validar com Marketing/Atendimento a leitura dos sinais v2 já apresentados pelo Analytics.
 3. Modelar episódios de sinal e registrar responsável pela ação. Separar conclusão da tarefa de retorno observado e de impacto atribuído.
 4. Definir identidade de usuário e organização antes de qualquer integração real. Hoje “perfil” é uma empresa fictícia escolhida na demo, não uma pessoa autenticada.
 5. Criar adaptador de banco gerenciado, migrações e funções HTTP em uma nuvem escolhida; testar duplicatas concorrentes, persistência entre execuções e limites de carga.
@@ -84,4 +84,4 @@ Referências técnicas consultadas em 15/09/2026: [desenho de aplicações Lambd
 6. Desativar coleta: eventos daquela sessão são removidos e a personalização para.
 7. Consultar sinais v2 para um período histórico: explicar `evaluatedAt` e `activeNow`.
 
-Essas etapas podem ser exercitadas pelos endpoints e testes HTTP. A interface atual não foi alterada para apresentar todos os novos campos. Reengajamento e ganho de conversão seguem sem comprovação; o protótipo demonstra o ciclo de dados e decisão.
+Essas etapas podem ser exercitadas pelos endpoints e testes HTTP. O Analytics apresenta os sinais v2. O App original permanece sem alterações e sua demo já exibe o texto nextStep retornado pela API. Reengajamento e ganho de conversão seguem sem comprovação; o protótipo demonstra o ciclo de dados e decisão.
